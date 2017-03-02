@@ -1,0 +1,16 @@
+{
+  "name": "hyper-killer",
+  "version": "0.0.1",
+  "description": "Connects to Hyper.sh and removes old(-ish) things.",
+  "main": "hyper-killer",
+  "scripts": {
+    "start": "./hyper-killer",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": "celtra/hyper-killer",
+  "license": "UNLICENSED",
+  "dependencies": {
+    "node-fetch": "1.x.x",
+    "hyper-aws4": "1.x"
+  }
+}

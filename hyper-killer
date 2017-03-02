@@ -1,0 +1,84 @@
+#!/usr/bin/env node
+const Hyper = require('./Hyper.js')
+
+process.on('unhandledRejection', (reason, p) => {
+  console.error(reason)
+  process.exit(1)
+})
+
+if (!process.env.HYPER_ACCESS_KEY)
+  throw new Error('ACCESS_KEY not set.')
+if (!process.env.HYPER_SECRET_KEY)
+  throw new Error('ACCESS_KEY not set.')
+
+const now = Math.floor(Date.now()/1000)
+const hyper = new Hyper(process.env.HYPER_ACCESS_KEY, process.env.HYPER_SECRET_KEY)
+
+function removeContainersCreatedBefore(t) {
+  return hyper.request('GET', 'containers/json?all=1').then(containers => {
+    return Promise.all(
+      containers
+        .filter(container => container.Created < t)
+        .map(container => {
+          return hyper.request('DELETE', `containers/${container.Id}?force=1`)
+            .then(response => {
+              console.info(`Removed old container ${container.Id} (${now - container.Created} seconds old).`)
+            })
+        })
+    )
+  })
+}
+
+function removeUnattachedVolumes() {
+  return hyper.request('GET', `volumes`).then(volumes => {
+    return Promise.all(
+      (volumes.Volumes || [])
+        .filter(v => !v.Labels.container)
+        .map(volume => {
+          return hyper.request('DELETE', `volumes/${volume.Name}`)
+            .then(response => {
+              console.info(`Removed unattached volume ${volume.Name}.`)
+            })
+        })
+    )
+  })
+}
+
+function removeUnusedImagesCreatedBefore(t) {
+  return hyper.request('GET', 'images/json').then(images => {
+    return Promise.all(
+      images
+        .filter(image => image.Created < t)
+        .map(image => {
+          return hyper.request('DELETE', `images/${image.Id}`)
+            .then(response => {
+              // Since we're not forcing, we might not delete it if it's used.
+              // DELETE response for images returns what it has actually done.
+              if (response && response.length) {
+                console.info(`Removed unused old image ${image.Id} (${now - image.Created} seconds old).`)
+              }
+            })
+        })
+    )
+  })
+}
+
+function removeDanglingImages() {
+  return hyper.request('GET', 'images/json?all=1&filters={"dangling":["true"]}').then(images => {
+    return Promise.all(
+      images
+        .map(image => {
+          return hyper.request('DELETE', `images/${image.Id}`)
+            .then(response => {
+              console.info(`Removed dangling image ${image.Id}.`)
+            })
+        })
+    )
+  })
+}
+
+removeContainersCreatedBefore(now - 1*60*60*0)
+  .then(() => removeUnattachedVolumes() )
+  .then(() => removeUnusedImagesCreatedBefore(now - 24*60*60*0) )
+  .then(() => removeDanglingImages() )
+  .then(() => { console.info('All done.') })
