@@ -49,6 +49,7 @@ function removeUnusedImagesCreatedBefore(t) {
     return Promise.all(
       images
         .filter(image => image.Created < t)
+        .filter(image => image.RepoTags.indexOf('celtra/hyper-killer:latest') == -1)
         .map(image => {
           return hyper.request('DELETE', `images/${image.Id}`)
             .then(response => {
