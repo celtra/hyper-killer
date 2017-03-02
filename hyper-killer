@@ -77,8 +77,8 @@ function removeDanglingImages() {
   })
 }
 
-removeContainersCreatedBefore(now - 1*60*60*0)
+removeContainersCreatedBefore(now - 1*60*60)
   .then(() => removeUnattachedVolumes() )
-  .then(() => removeUnusedImagesCreatedBefore(now - 24*60*60*0) )
+  .then(() => removeUnusedImagesCreatedBefore(now - 24*60*60) )
   .then(() => removeDanglingImages() )
   .then(() => { console.info('All done.') })
