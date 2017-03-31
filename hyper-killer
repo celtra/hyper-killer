@@ -78,7 +78,7 @@ function removeDanglingImages() {
   })
 }
 
-removeContainersCreatedBefore(now - 1*60*60)
+removeContainersCreatedBefore(now - 2*60*60)
 // Temporarily disabled because we might catch volumes between re-attaches.
 // Re-enable after this is done: https://trello.com/c/MS2rXcPa/84-created-timestamp-for-volumes
 //  .then(() => removeUnattachedVolumes() )

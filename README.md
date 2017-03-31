@@ -2,7 +2,7 @@
 
 Keeps a Hyper account that is used for only short-lived tasks (e.g. CI) clean by removing:
 
-  * containers (running or not) after 1 hour
+  * containers (running or not) after 2 hours
   * volumes, if unattached
   * images, after 1 day or if dangling
 
